@@ -1,11 +1,11 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { changeFilter } from '../../redux/filtersSlice';
+import { changeFilter } from '../../redux/filters/slice';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useId } from 'react';
 import css from './ContactForm.module.css';
-import { addContact } from '../../redux/contactsOps';
-import { selectContacts } from '../../redux/contactsSlice';
+import { addContact } from '../../redux/contacts/operations';
+import { selectContacts } from '../../redux/contacts/slice';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string()

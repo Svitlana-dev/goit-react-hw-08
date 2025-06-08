@@ -1,45 +1,65 @@
-import css from './App.module.css';
-import ContactForm from './components/ContactForm/ContactForm';
-import SearchBox from './components/SearchBox/SearchBox';
-import ContactList from './components/ContactList/ContactList';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import Layout from '../src/components/Layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchContacts } from './redux/contactsOps';
-import { BeatLoader } from 'react-spinners';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import { selectLoading } from './redux/contactsSlice';
-import { selectError } from './redux/contactsSlice';
+import { refreshUser } from './redux/auth/operations';
+import { selectIsRefreshing } from './redux/auth/selectors';
+import RestrictedRoute from './components/RestrictedRoute';
+import PrivateRoute from './components/PrivateRoute';
+
+const HomePage = lazy(() => import('../src/pages/HomePage/HomePage'));
+const RegisterPage = lazy(() =>
+  import('../src/pages/RegisterPage/RegisterPage'),
+);
+const LoginPage = lazy(() => import('../src/pages/LoginPage/LoginPage'));
+const ContactsPage = lazy(() =>
+  import('../src/pages/ContactsPage/ContactsPage'),
+);
+const ProfilePage = lazy(() => import('../src/pages/ProfilePage/ProfilePage'));
 
 export default function App() {
   const dispatch = useDispatch();
-  const loading = useSelector(selectLoading);
-  const error = useSelector(selectError);
+  const IsRefreshing = useSelector(selectIsRefreshing);
 
   useEffect(() => {
-    dispatch(fetchContacts())
-      .unwrap()
-      .then((data) => console.log(data))
-      .catch((error) => console.log(error));
+    dispatch(refreshUser());
   }, [dispatch]);
 
   return (
-    <div className={css.container}>
-      <h1 className={css.title}>Phonebook</h1>
-      {loading ? (
-        <BeatLoader size={15} color="#000" loading={true} />
-      ) : error ? (
-        <Alert severity="error">
-          <AlertTitle>Error</AlertTitle>
-          Failed to load contacts. Please try again later.
-        </Alert>
-      ) : (
-        <>
-          <ContactForm />
-          <SearchBox />
-          <ContactList />
-        </>
-      )}
-    </div>
+    !IsRefreshing && (
+      <Layout>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route
+              path="/register"
+              element={
+                <RestrictedRoute
+                  redirectTo="/profile"
+                  component={<RegisterPage />}
+                />
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <RestrictedRoute
+                  redirectTo="/contacts"
+                  component={<LoginPage />}
+                />
+              }
+            />
+            <Route
+              path="/contacts"
+              element={<PrivateRoute component={<ContactsPage />} />}
+            />
+            <Route
+              path="/profile"
+              element={<PrivateRoute component={<ProfilePage />} />}
+            />
+          </Routes>
+        </Suspense>
+      </Layout>
+    )
   );
 }
