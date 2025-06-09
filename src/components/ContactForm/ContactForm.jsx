@@ -6,6 +6,7 @@ import { useId } from 'react';
 import css from './ContactForm.module.css';
 import { addContact } from '../../redux/contacts/operations';
 import { selectContacts } from '../../redux/contacts/slice';
+import toast from 'react-hot-toast';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string()
@@ -35,11 +36,18 @@ export default function ContactForm() {
     );
 
     if (isExist) {
-      alert(`${values.name} is already in contacts.`);
+      toast.error(`${values.name} is already in contacts.`);
     } else {
-      dispatch(addContact(values));
-      dispatch(changeFilter(''));
-      actions.resetForm();
+      dispatch(addContact(values))
+        .unwrap()
+        .then(() => {
+          toast.success('Contact added!');
+          dispatch(changeFilter(''));
+          actions.resetForm();
+        })
+        .catch(() => {
+          toast.error('Failed to add contact.');
+        });
     }
   };
 

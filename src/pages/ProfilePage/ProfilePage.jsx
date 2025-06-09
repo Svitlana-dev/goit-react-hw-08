@@ -6,7 +6,7 @@ export default function ProfilePage() {
   const user = useSelector(selectUser);
   return (
     <div>
-      <PageTitle>Welcome to your profile {user.name}</PageTitle>
+      <PageTitle>Welcome to your profile, {user.name}</PageTitle>
     </div>
   );
 }
